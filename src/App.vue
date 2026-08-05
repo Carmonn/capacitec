@@ -1,53 +1,64 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useTheme } from "vuetify";
+import { useDisplay } from "vuetify";
+import logoCompleto from "@/assets/img/LogoCompleto.png";
 
-const theme = useTheme();
-
-const isDark = computed(() => theme.global.name.value === "darkTheme");
-
-function toggleTheme() {
-  theme.global.name.value = isDark.value ? "lightTheme" : "darkTheme";
-}
+const { smAndDown } = useDisplay();
 </script>
 
 <template>
   <v-app>
     <v-main>
       <v-container class="py-12">
-        <v-card
-          class="mx-auto pa-6"
-          max-width="680"
-          color="surface"
-          elevation="2"
-        >
-          <h1 class="text-h4 mb-3 text-primary">Capacitec + Vuetify</h1>
-          <p class="text-body-1 app-text-main mb-4">
-            Vuetify 4.1.6 se instaló correctamente y el tema global ahora usa la
-            paleta corporativa.
-          </p>
-          <v-btn
-            class="mb-4"
-            color="primary"
-            variant="outlined"
-            prepend-icon="mdi-theme-light-dark"
-            @click="toggleTheme"
-          >
-            {{ isDark ? "Cambiar a tema claro" : "Cambiar a tema oscuro" }}
-          </v-btn>
-          <div class="d-flex flex-wrap ga-3">
-            <v-btn color="primary" variant="flat">Primario</v-btn>
-            <v-btn color="secondary" variant="flat">Secundario</v-btn>
-            <v-btn color="accent" variant="tonal">Acento Claro</v-btn>
-          </div>
-        </v-card>
+        <v-row justify="center">
+          <v-col cols="12" sm="10" md="8" lg="6" xl="5">
+            <v-img
+              :src="logoCompleto"
+              :max-width="smAndDown ? 350 : 700"
+              alt="Logo completo de ADVR Consultores"
+              aspect-ratio="3.2"
+              width="100%"
+              eager
+            />
+          </v-col>
+        </v-row>
+        <v-row class="mt-4" justify="center">
+          <v-col cols="12" sm="10" md="8" lg="6" xl="5">
+            <v-card class="pa-4 pa-sm-6" elevation="2" rounded="lg">
+              <v-card-title class="mb-3 text-title-medium"
+                >Capacitec Login</v-card-title
+              >
+              <!-- <p>Capacitec Login</p> -->
+              <v-text-field
+                label="Correo electronico"
+                type="email"
+                autocomplete="email"
+                variant="outlined"
+                :density="smAndDown ? 'comfortable' : 'default'"
+                hide-details="auto"
+                class="mb-3"
+                :prepend-icon="smAndDown ? undefined : 'mdi-email-outline'"
+              />
+              <v-text-field
+                label="Contrasena"
+                type="password"
+                autocomplete="current-password"
+                variant="outlined"
+                :density="smAndDown ? 'comfortable' : 'default'"
+                hide-details="auto"
+                class="mb-3"
+                :prepend-icon="smAndDown ? undefined : 'mdi-lock-outline'"
+              />
+              <div class="d-flex justify-center mt-10">
+                <v-btn color="primary" :width="smAndDown ? '100%' : '50%'">
+                  Iniciar sesion
+                </v-btn>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
   </v-app>
 </template>
 
-<style scoped>
-.app-text-main {
-  color: rgb(var(--v-theme-text-primary));
-}
-</style>
+<style scoped></style>
