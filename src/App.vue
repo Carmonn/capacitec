@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth.store.ts";
+import { useNavigation } from "@/composables/useNavigation";
+
+import AppBar from "@/components/AppBar.vue";
+
+const { isProtectedRoute } = useNavigation();
 
 const authStore = useAuthStore();
 onMounted(() => {
@@ -10,6 +15,7 @@ onMounted(() => {
 
 <template>
   <v-app>
+    <AppBar v-if="isProtectedRoute"></AppBar>
     <v-main>
       <router-view></router-view>
     </v-main>

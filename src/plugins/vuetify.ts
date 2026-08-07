@@ -8,6 +8,7 @@ const lightTheme = {
   dark: false,
   colors: {
     primary: "#1571C4",
+    "primary-lighten-1": "#3D8BD2",
     "primary-darken-1": "#0A3D62",
     secondary: "#2AACE2",
     accent: "#7FD1F0",
