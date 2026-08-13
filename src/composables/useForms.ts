@@ -1,4 +1,10 @@
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { z } from "zod";
 import { db } from "@/plugins/firebase";
 
@@ -6,11 +12,11 @@ const formSchema = z.object({
   nombre: z.string(),
   preguntas: z.array(
     z.object({
-      id: z.union([z.string(), z.number()]),
+      id: z.string(),
       texto: z.string(),
       opciones: z.array(
         z.object({
-          id: z.union([z.string(), z.number()]),
+          id: z.string(),
           texto: z.string(),
           correcta: z.boolean(),
         }),
@@ -18,6 +24,10 @@ const formSchema = z.object({
     }),
   ),
 });
+const formSchemaWithId = formSchema.extend({
+  id: z.string(),
+});
+export type Form = z.infer<typeof formSchemaWithId>;
 
 export function useForms() {
   function validateFormJson(form: unknown) {
@@ -59,12 +69,22 @@ export function useForms() {
   async function getForms() {
     const formsRef = collection(db, "formularios");
     const querySnapshot = await getDocs(formsRef);
-    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    const formularios = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return formularios as Form[];
+  }
+
+  async function deleteForm(formId: string) {
+    const formRef = doc(db, "formularios", formId);
+    await deleteDoc(formRef);
   }
 
   return {
     addForm,
     getForms,
-    validateFormJson,
+    deleteForm,
   };
 }
