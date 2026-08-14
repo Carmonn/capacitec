@@ -8,7 +8,7 @@ import {
 import { z } from "zod";
 import { db } from "@/plugins/firebase";
 
-const formSchema = z.object({
+const formularioSchema = z.object({
   nombre: z.string(),
   preguntas: z.array(
     z.object({
@@ -24,14 +24,14 @@ const formSchema = z.object({
     }),
   ),
 });
-const formSchemaWithId = formSchema.extend({
+const formularioSchemaWithId = formularioSchema.extend({
   id: z.string(),
 });
-export type Form = z.infer<typeof formSchemaWithId>;
+export type Formulario = z.infer<typeof formularioSchemaWithId>;
 
-export function useForms() {
-  function validateFormJson(form: unknown) {
-    const validation = formSchema.safeParse(form);
+export function useFormularios() {
+  function validateFormularioJson(form: unknown) {
+    const validation = formularioSchema.safeParse(form);
 
     if (validation.success) {
       return {
@@ -51,8 +51,8 @@ export function useForms() {
     };
   }
 
-  async function addForm(form: unknown) {
-    const validation = validateFormJson(form);
+  async function addFormulario(form: unknown) {
+    const validation = validateFormularioJson(form);
 
     if (!validation.isValid) {
       console.error("Errores de validación:", validation.errors);
@@ -66,7 +66,7 @@ export function useForms() {
     return docRef.id;
   }
 
-  async function getForms() {
+  async function getFormularios() {
     const formsRef = collection(db, "formularios");
     const querySnapshot = await getDocs(formsRef);
 
@@ -74,17 +74,17 @@ export function useForms() {
       id: doc.id,
       ...doc.data(),
     }));
-    return formularios as Form[];
+    return formularios as Formulario[];
   }
 
-  async function deleteForm(formId: string) {
+  async function deleteFormulario(formId: string) {
     const formRef = doc(db, "formularios", formId);
     await deleteDoc(formRef);
   }
 
   return {
-    addForm,
-    getForms,
-    deleteForm,
+    addFormulario,
+    getFormularios,
+    deleteFormulario,
   };
 }

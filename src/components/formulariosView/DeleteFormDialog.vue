@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { type Form, useForms } from "@/composables/useForms";
+import { type Formulario, useFormularios } from "@/composables/useFormularios";
 
 const props = defineProps<{
-  item: Form | null;
+  item: Formulario | null;
 }>();
 
 const showDialogDelete = defineModel<boolean>();
 
-const { deleteForm } = useForms();
+const { deleteFormulario } = useFormularios();
 
 async function submit() {
-  await handleDeleteForm();
+  await handleDeleteFormulario();
 }
 
-async function handleDeleteForm() {
+async function handleDeleteFormulario() {
   try {
-    const form = props.item;
-    if (form != null) {
-      await deleteForm(form.id);
+    const formulario = props.item;
+    if (formulario != null) {
+      await deleteFormulario(formulario.id);
       return;
     }
     console.error("No se ha pasado ningun formulario");

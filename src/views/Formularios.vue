@@ -5,27 +5,27 @@ import DataTable from "@/components/base/DataTable.vue";
 import CreateFormDialog from "@/components/formulariosView/CreateFormDialog.vue";
 import DeleteFormDialog from "@/components/formulariosView/DeleteFormDialog.vue";
 
-import { type Form, useForms } from "@/composables/useForms";
+import { type Formulario, useFormularios } from "@/composables/useFormularios";
 
-const { getForms } = useForms();
+const { getFormularios } = useFormularios();
 const headers = ref([
   { title: "Nombre del formulario", value: "hnombre" },
   { title: "Total de preguntas", value: "hpreguntas" },
   { title: "Acciones", value: "hactions", sortable: false },
 ]);
-const items = ref<Form[]>([]);
-async function handleGetForm() {
+const items = ref<Formulario[]>([]);
+async function handleGetFormularios() {
   try {
-    const forms = await getForms();
-    if (!forms) items.value = [];
-    else items.value = forms;
-    console.log("Formularios obtenidos:", forms);
+    const formularios = await getFormularios();
+    if (!formularios) items.value = [];
+    else items.value = formularios;
+    console.log("Formularios obtenidos:", formularios);
   } catch (error) {
     console.error("Error al obtener los formularios:", error);
   }
 }
 onMounted(async () => {
-  await handleGetForm();
+  await handleGetFormularios();
 });
 
 const {
@@ -39,7 +39,7 @@ const {
 function useFormDialog() {
   const formDialogMode = ref<"create" | "delete">("create");
   const formDialogControl = ref(false);
-  const selectedForm = ref<Form | null>(null);
+  const selectedForm = ref<Formulario | null>(null);
 
   const formDialogComponent = computed(() => {
     if (formDialogMode.value === "create") {
@@ -53,7 +53,7 @@ function useFormDialog() {
     formDialogMode.value = "create";
     formDialogControl.value = true;
   }
-  function openDeleteDialog(form: Form | null) {
+  function openDeleteDialog(form: Formulario | null) {
     selectedForm.value = form;
     formDialogMode.value = "delete";
     formDialogControl.value = true;

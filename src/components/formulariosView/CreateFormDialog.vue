@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { type Form, useForms } from "@/composables/useForms";
+import { type Formulario, useFormularios } from "@/composables/useFormularios";
 
 const props = defineProps<{
-  item: Form | null;
+  item: Formulario | null;
 }>();
 
 const showDialogCreate = defineModel<boolean>();
 
-const { addForm } = useForms();
+const { addFormulario } = useFormularios();
 const selectedFile = ref<File | null>(null);
 
 async function submit() {
-  await handleAddForm();
+  await handleAddFormulario();
 }
 
-async function handleAddForm() {
+async function handleAddFormulario() {
   try {
     const file = selectedFile.value;
     if (!file) {
@@ -24,10 +24,10 @@ async function handleAddForm() {
       return;
     }
     const text = await file.text();
-    const form = JSON.parse(text);
+    const formulario = JSON.parse(text);
 
-    const formId = await addForm(form);
-    console.log("Formulario agregado con ID:", formId);
+    const formularioId = await addFormulario(formulario);
+    console.log("Formulario agregado con ID:", formularioId);
   } catch (error) {
     console.error("Error al agregar el formulario:", error);
   }
