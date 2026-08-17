@@ -6,14 +6,10 @@ import {
   useCapacitaciones,
 } from "@/composables/useCapacitaciones";
 
-const props = defineProps<{
-  item: Capacitacion | null;
-}>();
-
 const showDialogCreate = defineModel<boolean>();
 
 const { addCapacitacion } = useCapacitaciones();
-const selectedFile = ref<File | null>(null);
+const nombreInstructor = ref("");
 
 async function submit() {
   await handleAddCapacitacion();
@@ -21,8 +17,29 @@ async function submit() {
 
 async function handleAddCapacitacion() {
   try {
-    // const capacitacionId = await addCapacitacion();
-    // console.log("Capacitación agregada con ID:", capacitacionId);
+    const capacitacionId = await addCapacitacion({
+      nombreInstructor: nombreInstructor.value,
+      fechaRealizacion: new Date().toISOString(),
+      estado: "Mexico",
+      municipio: null,
+      cliente: "BBVA",
+      formularioId: "rMwhNMwWzCZ4uo0nbbYv",
+      participantes: [
+        {
+          nombre: "Juan",
+          apellidoPaterno: "Perez",
+          apellidoMaterno: "Gomez",
+          curp: "JUAP880101HDFRRL09",
+        },
+        {
+          nombre: "Luis",
+          apellidoPaterno: "Sanchez",
+          apellidoMaterno: "Rosas",
+          curp: "LSAR880101HDFRRL09",
+        },
+      ],
+    });
+    console.log("Capacitación agregada con ID:", capacitacionId);
   } catch (error) {
     console.error("Error al agregar la capacitación:", error);
   }
@@ -38,13 +55,11 @@ async function handleAddCapacitacion() {
 
       <v-card-text>
         <div>
-          <v-file-input
-            v-model="selectedFile"
-            label="Subir archivo JSON"
-            accept=".json"
+          <v-text-field
+            v-model="nombreInstructor"
+            label="Nombre del instructor"
             outlined
-            dense
-          ></v-file-input>
+          ></v-text-field>
         </div>
       </v-card-text>
 

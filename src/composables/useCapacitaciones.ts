@@ -24,8 +24,8 @@ const participanteSchema = z.object({
   apellidoPaterno: z.string(),
   apellidoMaterno: z.string(),
   curp: z.string(),
-  diagnostico: respuestaSchema,
-  final: respuestaSchema,
+  diagnostico: respuestaSchema.optional(),
+  final: respuestaSchema.optional(),
 });
 export type Participante = z.infer<typeof participanteSchema>;
 
@@ -37,7 +37,7 @@ const capacitacionSchema = z.object({
   municipio: z.string().nullable(),
   cliente: z.string(),
   formularioId: z.string(),
-  participantes: z.array(participanteSchema.nullable().optional()),
+  participantes: z.array(participanteSchema).optional(),
 });
 export type Capacitacion = z.infer<typeof capacitacionSchema>;
 

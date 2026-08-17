@@ -2,8 +2,8 @@
 import { ref, computed, onMounted } from "vue";
 
 import DataTable from "@/components/base/DataTable.vue";
-import CreateFormularioDialog from "@/components/formulariosView/CreateFormDialog.vue";
-import DeleteFormularioDialog from "@/components/formulariosView/DeleteFormDialog.vue";
+import CreateFormularioDialog from "@/components/formulariosView/CreateFormularioDialog.vue";
+import DeleteFormularioDialog from "@/components/formulariosView/DeleteFormularioDialog.vue";
 
 import { type Formulario, useFormularios } from "@/composables/useFormularios";
 import { useDialog } from "@/composables/useDialog";
