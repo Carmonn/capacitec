@@ -2,10 +2,11 @@
 import { ref, computed, onMounted } from "vue";
 
 import DataTable from "@/components/base/DataTable.vue";
-import CreateFormDialog from "@/components/formulariosView/CreateFormDialog.vue";
-import DeleteFormDialog from "@/components/formulariosView/DeleteFormDialog.vue";
+import CreateFormularioDialog from "@/components/formulariosView/CreateFormDialog.vue";
+import DeleteFormularioDialog from "@/components/formulariosView/DeleteFormDialog.vue";
 
 import { type Formulario, useFormularios } from "@/composables/useFormularios";
+import { useDialog } from "@/composables/useDialog";
 
 const { getFormularios } = useFormularios();
 const headers = ref([
@@ -14,6 +15,7 @@ const headers = ref([
   { title: "Acciones", value: "hactions", sortable: false },
 ]);
 const items = ref<Formulario[]>([]);
+
 async function handleGetFormularios() {
   try {
     const formularios = await getFormularios();
@@ -29,51 +31,27 @@ onMounted(async () => {
 });
 
 const {
-  formDialogControl,
-  selectedForm,
-  formDialogComponent,
-  openAddDialog,
-  openDeleteDialog,
-} = useFormDialog();
+  dialogControl,
+  dialogMode,
+  dialogItem,
+  setCreateDialog,
+  setDeleteDialog,
+} = useDialog<Formulario>();
 
-function useFormDialog() {
-  const formDialogMode = ref<"create" | "delete">("create");
-  const formDialogControl = ref(false);
-  const selectedForm = ref<Formulario | null>(null);
-
-  const formDialogComponent = computed(() => {
-    if (formDialogMode.value === "create") {
-      return CreateFormDialog;
-    }
-    return DeleteFormDialog;
-  });
-
-  function openAddDialog() {
-    selectedForm.value = null;
-    formDialogMode.value = "create";
-    formDialogControl.value = true;
+const formularioDialogComponent = computed(() => {
+  if (dialogMode.value == "create") {
+    return CreateFormularioDialog;
+  } else {
+    return DeleteFormularioDialog;
   }
-  function openDeleteDialog(form: Formulario | null) {
-    selectedForm.value = form;
-    formDialogMode.value = "delete";
-    formDialogControl.value = true;
-  }
-
-  return {
-    formDialogControl,
-    selectedForm,
-    formDialogComponent,
-    openAddDialog,
-    openDeleteDialog,
-  };
-}
+});
 </script>
 
 <template>
   <component
-    :is="formDialogComponent"
-    v-model="formDialogControl"
-    :item="selectedForm"
+    :is="formularioDialogComponent"
+    v-model="dialogControl"
+    :item="dialogItem"
   ></component>
 
   <v-container>
@@ -84,7 +62,7 @@ function useFormDialog() {
     </v-row>
     <v-row>
       <v-col>
-        <v-btn color="success" @click="openAddDialog()"> Agregar </v-btn>
+        <v-btn color="success" @click="setCreateDialog()"> Agregar </v-btn>
         <DataTable :items="items" :headers="headers">
           <template #[`item.hnombre`]="{ item }">
             {{ item.nombre }}
@@ -95,7 +73,7 @@ function useFormDialog() {
           </template>
 
           <template #[`item.hactions`]="{ item }">
-            <v-btn color="error" @click="openDeleteDialog(item)">
+            <v-btn color="error" @click="setDeleteDialog(item)">
               Eliminar
             </v-btn>
           </template>
