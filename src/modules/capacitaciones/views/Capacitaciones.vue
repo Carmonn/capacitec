@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 
-import DataTable from "@/components/base/DataTable.vue";
-import CreateCapacitacionDialog from "@/components/capacitacionesView/CreateCapacitacionDialog.vue";
-import DeleteCapacitacionDialog from "@/components/capacitacionesView/DeleteCapacitacionDialog.vue";
+import DataTable from "@/components/DataTable.vue";
+import CreateDialog from "../components/CreateDialog.vue";
+import DeleteDialog from "../components/DeleteDialog.vue";
 
 import {
   type Capacitacion,
   useCapacitaciones,
-} from "@/composables/useCapacitaciones";
+} from "../composables/useCapacitaciones";
 import { useDialog } from "@/composables/useDialog";
 
 const headers = ref([
@@ -46,9 +46,9 @@ const {
 } = useDialog<Capacitacion>();
 const capacitacionDialogComponent = computed(() => {
   if (dialogMode.value == "create") {
-    return CreateCapacitacionDialog;
+    return CreateDialog;
   } else {
-    return DeleteCapacitacionDialog;
+    return DeleteDialog;
   }
 });
 </script>

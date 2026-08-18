@@ -4,7 +4,7 @@ import { ref } from "vue";
 import {
   type Capacitacion,
   useCapacitaciones,
-} from "@/composables/useCapacitaciones";
+} from "../composables/useCapacitaciones";
 
 const props = defineProps<{
   item: Capacitacion | null;

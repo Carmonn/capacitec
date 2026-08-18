@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 
-import DataTable from "@/components/base/DataTable.vue";
-import CreateFormularioDialog from "@/components/formulariosView/CreateFormularioDialog.vue";
-import DeleteFormularioDialog from "@/components/formulariosView/DeleteFormularioDialog.vue";
+import DataTable from "@/components/DataTable.vue";
+import CreateDialog from "../components/CreateDialog.vue";
+import DeleteDialog from "../components/DeleteDialog.vue";
 
-import { type Formulario, useFormularios } from "@/composables/useFormularios";
+import { type Formulario, useFormularios } from "../composables/useFormularios";
 import { useDialog } from "@/composables/useDialog";
 
 const { getFormularios } = useFormularios();
@@ -40,9 +40,9 @@ const {
 
 const formularioDialogComponent = computed(() => {
   if (dialogMode.value == "create") {
-    return CreateFormularioDialog;
+    return CreateDialog;
   } else {
-    return DeleteFormularioDialog;
+    return DeleteDialog;
   }
 });
 </script>

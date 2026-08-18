@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { type Formulario, useFormularios } from "@/composables/useFormularios";
+import { type Formulario, useFormularios } from "../composables/useFormularios";
 
 const props = defineProps<{
   item: Formulario | null;

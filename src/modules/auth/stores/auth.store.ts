@@ -1,7 +1,7 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import type { User } from "firebase/auth";
-import { useAuth } from "@/composables/useAuth";
+import { useAuth } from "../composables/useAuth";
 
 export const useAuthStore = defineStore("auth", () => {
   const { login: firebaseLogin, logout: firebaseLogout, subscribe } = useAuth();

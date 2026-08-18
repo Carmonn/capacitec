@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { useAuthStore } from "@/stores/auth.store.ts";
+import { useAuthStore } from "@/modules/auth/stores/auth.store.ts";
 import { useNavigation } from "@/composables/useNavigation";
 
-import AppBar from "@/components/base/AppBar.vue";
+import AppBar from "@/components/AppBar.vue";
 
 const { isProtectedRoute } = useNavigation();
 

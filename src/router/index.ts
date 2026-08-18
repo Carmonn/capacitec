@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-import LoginView from "@/views/Login.vue";
-import CapacitacionesView from "@/views/Capacitaciones.vue";
-import FormulariosView from "@/views/Formularios.vue";
+import LoginView from "@/modules/auth/views/Login.vue";
+import CapacitacionesView from "@/modules/capacitaciones/views/Capacitaciones.vue";
+import FormulariosView from "@/modules/formularios/views/Formularios.vue";
 
 const routes = [
   {
