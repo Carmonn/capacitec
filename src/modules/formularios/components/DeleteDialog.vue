@@ -1,33 +1,29 @@
 <script setup lang="ts">
 import { useStatus } from "@/composables/useStatus";
-import { type Formulario, useFormularios } from "../composables/useFormularios";
+import { useFormularios } from "../composables/useFormularios";
+import { type Formulario } from "../schemas";
 
 const props = defineProps<{
-  item: Formulario | null;
+  item: Formulario;
 }>();
 const emit = defineEmits<{
   deleted: [id: string];
 }>();
 
 const { deleteFormulario } = useFormularios();
-const { isLoading, status, errorMessage } = useStatus();
+const { isLoading, status, resetStatus } = useStatus();
 const showDialogDelete = defineModel<boolean>();
 
 async function submit() {
   try {
     status.value = "loading";
     const formulario = props.item;
-    if (formulario != null) {
-      await deleteFormulario(formulario.id);
-      status.value = "success";
-      emit("deleted", formulario.id);
-      return;
-    }
-    console.error("No se ha pasado ningun formulario");
+    await deleteFormulario(formulario.id);
+    status.value = "success";
+    emit("deleted", formulario.id);
+    resetStatus();
   } catch (error) {
     status.value = "error";
-    errorMessage.value =
-      "No se pudo eliminar el formulario. Por favor, inténtalo de nuevo.";
     console.log("Error al eliminar el formulario", error);
   }
 }
@@ -53,7 +49,7 @@ async function submit() {
           color="primary"
           text
           @click="submit"
-          :disabled="isLoading"
+          :disabled="isLoading || status === 'success'"
           :loading="isLoading"
         >
           Eliminar

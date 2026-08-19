@@ -8,7 +8,13 @@ export function useStatus() {
 
   const isLoading = computed(() => status.value === "loading");
 
+  function resetStatus() {
+    status.value = "idle";
+    errorMessage.value = null;
+  }
+
   return {
+    resetStatus,
     status,
     isLoading,
     errorMessage,

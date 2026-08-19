@@ -8,7 +8,7 @@ import { useFormularios } from "../composables/useFormularios";
 import { formularioJsonSchema } from "../schemas";
 
 const { addFormulario } = useFormularios();
-const { isLoading, status } = useStatus();
+const { isLoading, status, resetStatus } = useStatus();
 const {
   errors,
   handleSubmit,
@@ -37,8 +37,9 @@ const submit = handleSubmit(async (values) => {
     });
 
     status.value = "success";
-    resetForm();
     emit("created", formularioId);
+    resetStatus();
+    resetForm();
   } catch (error) {
     console.error("Error al agregar el formulario:", error);
     status.value = "error";
