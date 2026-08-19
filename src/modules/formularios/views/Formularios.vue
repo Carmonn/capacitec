@@ -7,23 +7,44 @@ import DeleteDialog from "../components/DeleteDialog.vue";
 
 import { type Formulario, useFormularios } from "../composables/useFormularios";
 import { useDialog } from "@/composables/useDialog";
+import { useSnackbar } from "@/composables/useSnackbar";
+
+import { type TableHeader } from "@/types/table.types";
 
 const { getFormularios } = useFormularios();
-const headers = ref([
-  { title: "Nombre del formulario", value: "hnombre" },
-  { title: "Total de preguntas", value: "hpreguntas" },
-  { title: "Acciones", value: "hactions", sortable: false },
+const { snackbar, snackbarMessage, snackbarType, showSnackbar } = useSnackbar();
+
+const headers = ref<TableHeader[]>([
+  { title: "Nombre del formulario", value: "hNombre" },
+  { title: "Total de preguntas", value: "hPreguntas", align: "center" },
+  { title: "Acciones", value: "hActions", align: "center" },
 ]);
 const items = ref<Formulario[]>([]);
+const isLoading = ref(false);
 
+async function handleCreated(formularioId: string) {
+  await handleGetFormularios();
+  dialogControl.value = false;
+  showSnackbar("Formulario creado con éxito", "success");
+  console.log("Formulario creado con ID:", formularioId);
+}
+async function handleDeleted(formularioId: string) {
+  await handleGetFormularios();
+  dialogControl.value = false;
+  showSnackbar("Formulario eliminado con éxito", "success");
+  console.log("Formulario eliminado con ID:", formularioId);
+}
 async function handleGetFormularios() {
   try {
+    isLoading.value = true;
     const formularios = await getFormularios();
     if (!formularios) items.value = [];
     else items.value = formularios;
     console.log("Formularios obtenidos:", formularios);
   } catch (error) {
     console.error("Error al obtener los formularios:", error);
+  } finally {
+    isLoading.value = false;
   }
 }
 onMounted(async () => {
@@ -52,7 +73,16 @@ const formularioDialogComponent = computed(() => {
     :is="formularioDialogComponent"
     v-model="dialogControl"
     :item="dialogItem"
+    @created="handleCreated"
+    @deleted="handleDeleted"
   ></component>
+
+  <v-snackbar v-model="snackbar" :color="snackbarType" :timeout="4000">
+    {{ snackbarMessage }}
+    <template #actions>
+      <v-btn variant="text" @click="snackbar = false"> Cerrar </v-btn>
+    </template>
+  </v-snackbar>
 
   <v-container>
     <v-row>
@@ -63,16 +93,16 @@ const formularioDialogComponent = computed(() => {
     <v-row>
       <v-col>
         <v-btn color="success" @click="setCreateDialog()"> Agregar </v-btn>
-        <DataTable :items="items" :headers="headers">
-          <template #[`item.hnombre`]="{ item }">
+        <DataTable :items="items" :headers="headers" :loading="isLoading">
+          <template #[`item.hNombre`]="{ item }">
             {{ item.nombre }}
           </template>
 
-          <template #[`item.hpreguntas`]="{ item }">
+          <template #[`item.hPreguntas`]="{ item }">
             {{ item.preguntas.length }}
           </template>
 
-          <template #[`item.hactions`]="{ item }">
+          <template #[`item.hActions`]="{ item }">
             <v-btn color="error" @click="setDeleteDialog(item)">
               Eliminar
             </v-btn>
