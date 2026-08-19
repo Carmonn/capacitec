@@ -5,7 +5,8 @@ import DataTable from "@/components/DataTable.vue";
 import CreateDialog from "../components/CreateDialog.vue";
 import DeleteDialog from "../components/DeleteDialog.vue";
 
-import { type Formulario, useFormularios } from "../composables/useFormularios";
+import { type Formulario } from "../schemas";
+import { useFormularios } from "../composables/useFormularios";
 import { useDialog } from "@/composables/useDialog";
 import { useSnackbar } from "@/composables/useSnackbar";
 
@@ -15,6 +16,7 @@ const { getFormularios } = useFormularios();
 const { snackbar, snackbarMessage, snackbarType, showSnackbar } = useSnackbar();
 
 const headers = ref<TableHeader[]>([
+  { title: "Fecha de creación", value: "hFechaCreacion" },
   { title: "Nombre del formulario", value: "hNombre" },
   { title: "Total de preguntas", value: "hPreguntas", align: "center" },
   { title: "Acciones", value: "hActions", align: "center" },
@@ -23,15 +25,15 @@ const items = ref<Formulario[]>([]);
 const isLoading = ref(false);
 
 async function handleCreated(formularioId: string) {
-  await handleGetFormularios();
   dialogControl.value = false;
   showSnackbar("Formulario creado con éxito", "success");
+  await handleGetFormularios();
   console.log("Formulario creado con ID:", formularioId);
 }
 async function handleDeleted(formularioId: string) {
-  await handleGetFormularios();
   dialogControl.value = false;
   showSnackbar("Formulario eliminado con éxito", "success");
+  await handleGetFormularios();
   console.log("Formulario eliminado con ID:", formularioId);
 }
 async function handleGetFormularios() {
@@ -94,6 +96,10 @@ const formularioDialogComponent = computed(() => {
       <v-col>
         <v-btn color="success" @click="setCreateDialog()"> Agregar </v-btn>
         <DataTable :items="items" :headers="headers" :loading="isLoading">
+          <template #[`item.hFechaCreacion`]="{ item }">
+            {{ item.fechaCreacion.toDate().toLocaleDateString("es-MX") }}
+          </template>
+
           <template #[`item.hNombre`]="{ item }">
             {{ item.nombre }}
           </template>

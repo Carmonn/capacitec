@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { z } from "zod";
 
 import { useForm } from "vee-validate";
 import { useStatus } from "@/composables/useStatus";
 import { useFormularios } from "../composables/useFormularios";
+import { formularioJsonSchema } from "../schemas";
 
 const { addFormulario } = useFormularios();
 const { isLoading, status } = useStatus();
 const {
-  nombreFormulario,
-  selectedFile,
   errors,
   handleSubmit,
+  resetForm,
+  nombreFormulario,
+  selectedFile,
   nombreFormularioAttrs,
   selectedFileAttrs,
 } = useDefineForm();
@@ -24,19 +25,19 @@ const emit = defineEmits<{
 
 const showDialogCreate = defineModel<boolean>();
 const submit = handleSubmit(async (values) => {
-  if (!values.selectedFile) {
-    return;
-  }
   try {
     status.value = "loading";
-    const text = await values.selectedFile.text();
+    const text = await values.selectedFile!.text();
     const formulario = JSON.parse(text);
+
     const formularioId = await addFormulario({
       nombre: values.nombreFormulario,
+      fechaCreacion: new Date(),
       ...formulario,
     });
 
     status.value = "success";
+    resetForm();
     emit("created", formularioId);
   } catch (error) {
     console.error("Error al agregar el formulario:", error);
@@ -59,13 +60,24 @@ function useDefineForm() {
       })
       .refine((file) => file.name.endsWith(".json"), {
         message: "El archivo debe ser un JSON",
+      })
+      .superRefine(async (file, ctx) => {
+        const text = await file.text();
+        const json = JSON.parse(text);
+        const validation = formularioJsonSchema.safeParse(json);
+        if (!validation.success) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "El archivo no cumple con el esquema definido",
+          });
+        }
       }),
   });
 
   const validateOnModelUpdate = (state: any) => ({
     validateOnModelUpdate: state.errors.length > 0,
   });
-  const { errors, defineField, handleSubmit } = useForm<FormValues>({
+  const { errors, defineField, handleSubmit, resetForm } = useForm<FormValues>({
     validationSchema: toTypedSchema(schema),
   });
   const [nombreFormulario, nombreFormularioAttrs] = defineField(
@@ -83,6 +95,7 @@ function useDefineForm() {
     selectedFile,
     selectedFileAttrs,
     errors,
+    resetForm,
     handleSubmit,
   };
 }
@@ -124,10 +137,11 @@ function useDefineForm() {
             accept=".json,application/json"
             variant="outlined"
             prepend-inner-icon="mdi-file-code-outline"
+            prepend-icon=""
             show-size
             hint="Selecciona el archivo JSON que contiene las preguntas"
-            persistent-hint
-          />
+          >
+          </v-file-input>
         </v-form>
       </v-card-text>
 
@@ -143,7 +157,7 @@ function useDefineForm() {
         <v-btn
           color="primary"
           variant="flat"
-          :disabled="isLoading"
+          :disabled="isLoading || status === 'success'"
           :loading="isLoading"
           @click="submit"
         >
