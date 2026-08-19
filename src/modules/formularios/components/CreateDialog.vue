@@ -1,64 +1,154 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { toTypedSchema } from "@vee-validate/zod";
+import { z } from "zod";
 
-import { type Formulario, useFormularios } from "../composables/useFormularios";
+import { useForm } from "vee-validate";
+import { useStatus } from "@/composables/useStatus";
+import { useFormularios } from "../composables/useFormularios";
 
-const props = defineProps<{
-  item: Formulario | null;
+const { addFormulario } = useFormularios();
+const { isLoading, status } = useStatus();
+const {
+  nombreFormulario,
+  selectedFile,
+  errors,
+  handleSubmit,
+  nombreFormularioAttrs,
+  selectedFileAttrs,
+} = useDefineForm();
+
+const emit = defineEmits<{
+  created: [id: string];
 }>();
 
 const showDialogCreate = defineModel<boolean>();
-
-const { addFormulario } = useFormularios();
-const selectedFile = ref<File | null>(null);
-
-async function submit() {
-  await handleAddFormulario();
-}
-
-async function handleAddFormulario() {
+const submit = handleSubmit(async (values) => {
+  if (!values.selectedFile) {
+    return;
+  }
   try {
-    const file = selectedFile.value;
-    if (!file) {
-      console.error("No se ha seleccionado ningún archivo.");
-      return;
-    }
-    const text = await file.text();
+    status.value = "loading";
+    const text = await values.selectedFile.text();
     const formulario = JSON.parse(text);
+    const formularioId = await addFormulario({
+      nombre: values.nombreFormulario,
+      ...formulario,
+    });
 
-    const formularioId = await addFormulario(formulario);
-    console.log("Formulario agregado con ID:", formularioId);
+    status.value = "success";
+    emit("created", formularioId);
   } catch (error) {
     console.error("Error al agregar el formulario:", error);
+    status.value = "error";
   }
+});
+
+function useDefineForm() {
+  type FormValues = {
+    nombreFormulario: string;
+    selectedFile: File | null;
+  };
+  const schema = z.object({
+    nombreFormulario: z
+      .string()
+      .nonempty("El nombre del formulario es obligatorio"),
+    selectedFile: z
+      .instanceof(File, {
+        message: "Debes seleccionar un archivo",
+      })
+      .refine((file) => file.name.endsWith(".json"), {
+        message: "El archivo debe ser un JSON",
+      }),
+  });
+
+  const validateOnModelUpdate = (state: any) => ({
+    validateOnModelUpdate: state.errors.length > 0,
+  });
+  const { errors, defineField, handleSubmit } = useForm<FormValues>({
+    validationSchema: toTypedSchema(schema),
+  });
+  const [nombreFormulario, nombreFormularioAttrs] = defineField(
+    "nombreFormulario",
+    validateOnModelUpdate,
+  );
+  const [selectedFile, selectedFileAttrs] = defineField(
+    "selectedFile",
+    validateOnModelUpdate,
+  );
+
+  return {
+    nombreFormulario,
+    nombreFormularioAttrs,
+    selectedFile,
+    selectedFileAttrs,
+    errors,
+    handleSubmit,
+  };
 }
 </script>
 
 <template>
-  <v-dialog v-model="showDialogCreate">
+  <v-dialog v-model="showDialogCreate" max-width="600">
     <v-card>
-      <v-card-title>
-        <span class="text-h5"> Agregar formulario </span>
+      <v-card-title class="d-flex align-center">
+        <v-icon class="mr-3"> mdi-file-document-plus-outline </v-icon>
+        <span>Agregar formulario</span>
+        <v-spacer />
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="showDialogCreate = false"
+        />
       </v-card-title>
 
       <v-card-text>
-        <div>
+        <v-form>
+          <v-text-field
+            v-model="nombreFormulario"
+            v-bind="nombreFormularioAttrs"
+            :error-messages="errors.nombreFormulario"
+            label="Nombre del formulario"
+            placeholder="Ej. Brigadistas 2026"
+            variant="outlined"
+            prepend-inner-icon="mdi-format-title"
+            class="mb-4"
+          />
+
           <v-file-input
             v-model="selectedFile"
-            label="Subir archivo JSON"
-            accept=".json"
-            outlined
-            dense
-          ></v-file-input>
-        </div>
+            v-bind="selectedFileAttrs"
+            :error-messages="errors.selectedFile"
+            label="Archivo del formulario"
+            placeholder="Selecciona un archivo JSON"
+            accept=".json,application/json"
+            variant="outlined"
+            prepend-inner-icon="mdi-file-code-outline"
+            show-size
+            hint="Selecciona el archivo JSON que contiene las preguntas"
+            persistent-hint
+          />
+        </v-form>
       </v-card-text>
 
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" text @click="showDialogCreate = false"
-          >Cancelar</v-btn
+      <v-divider />
+
+      <v-card-actions class="pa-4">
+        <v-spacer />
+
+        <v-btn variant="text" @click="showDialogCreate = false">
+          Cancelar
+        </v-btn>
+
+        <v-btn
+          color="primary"
+          variant="flat"
+          :disabled="isLoading"
+          :loading="isLoading"
+          @click="submit"
         >
-        <v-btn color="primary" text @click="submit"> Agregar </v-btn>
+          Agregar formulario
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

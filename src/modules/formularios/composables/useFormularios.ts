@@ -80,6 +80,7 @@ export function useFormularios() {
   async function deleteFormulario(formId: string) {
     const formRef = doc(db, "formularios", formId);
     await deleteDoc(formRef);
+    return formId;
   }
 
   return {
