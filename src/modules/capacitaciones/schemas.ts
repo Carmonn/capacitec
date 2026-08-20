@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { type DocumentReference } from "firebase/firestore";
 
 export const respuestaSchema = z.object({
   calificacion: z.number(),

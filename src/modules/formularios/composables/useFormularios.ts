@@ -6,6 +6,8 @@ import {
   doc,
   query,
   orderBy,
+  where,
+  type DocumentReference,
 } from "firebase/firestore";
 import { db } from "@/plugins/firebase";
 
@@ -52,12 +54,31 @@ export function useFormularios() {
   async function deleteFormulario(formularioId: string): Promise<string> {
     try {
       const formRef = doc(db, "formularios", formularioId);
+      const inUse = await isFormularioInUse(formRef);
+      if (inUse) {
+        throw new Error("Formulario en uso, no puede ser eliminado.");
+      }
       await deleteDoc(formRef);
       return formularioId;
     } catch (error) {
       console.error("Error deleting document: ", error);
       throw error;
     }
+  }
+
+  async function isFormularioInUse(
+    formularioRef: DocumentReference,
+  ): Promise<boolean> {
+    const capacitacionesRef = collection(db, "capacitaciones");
+
+    const q = query(
+      capacitacionesRef,
+      where("formularioRef", "==", formularioRef),
+    );
+
+    const snapshot = await getDocs(q);
+
+    return !snapshot.empty;
   }
 
   return {

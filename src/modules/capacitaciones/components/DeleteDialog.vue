@@ -1,33 +1,31 @@
 <script setup lang="ts">
-import { ref } from "vue";
-
-import {
-  type Capacitacion,
-  useCapacitaciones,
-} from "../composables/useCapacitaciones";
+import { useStatus } from "@/composables/useStatus";
+import { useCapacitaciones } from "../composables/useCapacitaciones";
+import { type Capacitacion } from "../schemas";
 
 const props = defineProps<{
-  item: Capacitacion | null;
+  item: Capacitacion;
+}>();
+const emit = defineEmits<{
+  deleted: [id: string];
+  crashed: [error: unknown];
 }>();
 
-const showDialogDelete = defineModel<boolean>();
-
 const { deleteCapacitacion } = useCapacitaciones();
-
+const { isLoading, status, resetStatus } = useStatus();
+const showDialogDelete = defineModel<boolean>();
 async function submit() {
-  await handleDeleteCapacitacion();
-}
-
-async function handleDeleteCapacitacion() {
   try {
+    status.value = "loading";
     const capacitacion = props.item;
-    if (capacitacion != null) {
-      await deleteCapacitacion(capacitacion.id!);
-      return;
-    }
-    console.error("No se ha pasado ninguna capacitación");
+    await deleteCapacitacion(capacitacion.id!);
+    status.value = "success";
+    emit("deleted", capacitacion.id!);
+    resetStatus();
   } catch (error) {
+    status.value = "error";
     console.log("Error al eliminar la capacitación", error);
+    emit("crashed", error);
   }
 }
 </script>
@@ -48,7 +46,15 @@ async function handleDeleteCapacitacion() {
         <v-btn color="primary" text @click="showDialogDelete = false"
           >Cancelar</v-btn
         >
-        <v-btn color="primary" text @click="submit"> Eliminar </v-btn>
+        <v-btn
+          color="primary"
+          text
+          @click="submit"
+          :disabled="isLoading || status === 'success'"
+          :loading="isLoading"
+        >
+          Eliminar
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

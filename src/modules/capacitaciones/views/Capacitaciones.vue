@@ -37,6 +37,11 @@ async function handleDeleted(formularioId: string) {
   await handleGetCapacitaciones();
   console.log("Capacitación eliminada con ID:", formularioId);
 }
+async function handleCrashed(error: unknown) {
+  dialogControl.value = false;
+  showSnackbar("Ocurrió un error al eliminar la capacitación", "error");
+  console.error("Error al eliminar la capacitación:", error);
+}
 async function handleGetCapacitaciones() {
   try {
     isLoading.value = true;
@@ -76,6 +81,7 @@ const capacitacionDialogComponent = computed(() => {
     :item="dialogItem"
     @created="handleCreated"
     @deleted="handleDeleted"
+    @crashed="handleCrashed"
   ></component>
 
   <v-snackbar v-model="snackbar" :color="snackbarType" :timeout="4000">
@@ -94,7 +100,7 @@ const capacitacionDialogComponent = computed(() => {
     <v-row>
       <v-col>
         <v-btn color="success" @click="setCreateDialog()"> Agregar </v-btn>
-        <DataTable :items="items" :headers="headers">
+        <DataTable :items="items" :headers="headers" :loading="isLoading">
           <template #[`item.hFecha`]="{ item }">
             {{ item.fechaCapacitacion.toLocaleDateString("es-MX") }}
           </template>

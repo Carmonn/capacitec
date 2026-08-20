@@ -36,13 +36,17 @@ async function handleDeleted(formularioId: string) {
   await handleGetFormularios();
   console.log("Formulario eliminado con ID:", formularioId);
 }
+async function handleCrashed(error: unknown) {
+  dialogControl.value = false;
+  showSnackbar("Ocurrió un error al eliminar el formulario", "error");
+  console.error("Error al eliminar el formulario:", error);
+}
 async function handleGetFormularios() {
   try {
     isLoading.value = true;
     const formularios = await getFormularios();
     if (!formularios) items.value = [];
     else items.value = formularios;
-    console.log("Formularios obtenidos:", formularios);
   } catch (error) {
     console.error("Error al obtener los formularios:", error);
   } finally {
@@ -77,6 +81,7 @@ const formularioDialogComponent = computed(() => {
     :item="dialogItem"
     @created="handleCreated"
     @deleted="handleDeleted"
+    @crashed="handleCrashed"
   ></component>
 
   <v-snackbar v-model="snackbar" :color="snackbarType" :timeout="4000">

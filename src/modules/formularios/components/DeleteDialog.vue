@@ -8,6 +8,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{
   deleted: [id: string];
+  crashed: [error: unknown];
 }>();
 
 const { deleteFormulario } = useFormularios();
@@ -25,6 +26,7 @@ async function submit() {
   } catch (error) {
     status.value = "error";
     console.log("Error al eliminar el formulario", error);
+    emit("crashed", error);
   }
 }
 </script>
