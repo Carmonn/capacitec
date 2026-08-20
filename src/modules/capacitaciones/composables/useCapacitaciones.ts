@@ -1,143 +1,109 @@
 import {
   collection,
   getDocs,
-  addDoc,
+  getDoc,
   writeBatch,
   doc,
 } from "firebase/firestore";
-import { z } from "zod";
 import { db } from "@/plugins/firebase";
 
-const respuestaSchema = z.object({
-  calificacion: z.number(),
-  preguntas: z.array(
-    z.object({
-      preguntaId: z.string(),
-      respuestaId: z.string(),
-    }),
-  ),
-});
-const participanteSchema = z.object({
-  id: z.string().optional(),
-  nombre: z.string(),
-  apellidoPaterno: z.string(),
-  apellidoMaterno: z.string(),
-  curp: z.string(),
-  diagnostico: respuestaSchema.optional(),
-  final: respuestaSchema.optional(),
-});
-export type Participante = z.infer<typeof participanteSchema>;
-
-const capacitacionSchema = z.object({
-  id: z.string().optional(),
-  nombreInstructor: z.string().nullable(),
-  fechaRealizacion: z.string(),
-  estado: z.string(),
-  municipio: z.string().nullable(),
-  cliente: z.string(),
-  formularioId: z.string(),
-  participantes: z.array(participanteSchema).optional(),
-});
-export type Capacitacion = z.infer<typeof capacitacionSchema>;
+import { type Formulario } from "@/modules/formularios/schemas";
+import { type Capacitacion, type CapacitacionRaw } from "../schemas";
 
 export function useCapacitaciones() {
-  function validateCapacitacion(capacitacion: unknown) {
-    const validation = capacitacionSchema.safeParse(capacitacion);
+  async function addCapacitacion(capacitacion: CapacitacionRaw) {
+    try {
+      const batch = writeBatch(db);
+      const capacitacionRef = doc(collection(db, "capacitaciones"));
 
-    if (validation.success) {
-      return {
-        isValid: true,
-        data: validation.data,
-        errors: [],
-      };
-    }
+      const { participantes, ...capacitacionData } = capacitacion;
 
-    return {
-      isValid: false,
-      data: null,
-      errors: validation.error.issues.map((issue) => ({
-        path: issue.path,
-        message: issue.message,
-      })),
-    };
-  }
+      batch.set(capacitacionRef, capacitacionData);
 
-  async function addCapacitacion(capacitacion: Capacitacion) {
-    const validation = validateCapacitacion(capacitacion);
-
-    if (!validation.isValid) {
-      console.error("Errores de validación:", validation.errors);
-      throw new Error(
-        `No cumple la estructura esperada: ${validation.errors.join(" | ")}`,
-      );
-    }
-
-    const capacitacionesRef = collection(db, "capacitaciones");
-    const capacitacionRef = await addDoc(capacitacionesRef, validation.data);
-
-    if (capacitacion?.participantes) {
-      const participantesRef = collection(
-        db,
-        "capacitaciones",
-        capacitacionRef.id,
-        "participantes",
-      );
-
-      for (const participante of capacitacion.participantes) {
-        await addDoc(participantesRef, participante);
-      }
-    }
-    return capacitacionRef.id;
-  }
-
-  async function getCapacitaciones() {
-    const capacitacionesRef = collection(db, "capacitaciones");
-    const querySnapshot = await getDocs(capacitacionesRef);
-
-    const capacitaciones = await Promise.all(
-      querySnapshot.docs.map(async (docSnapshot) => {
+      if (participantes && participantes.length > 0) {
         const participantesRef = collection(
           db,
           "capacitaciones",
-          docSnapshot.id,
+          capacitacionRef.id,
           "participantes",
         );
 
-        const participantesSnapshot = await getDocs(participantesRef);
+        for (const participante of participantes) {
+          const participanteRef = doc(participantesRef);
+          batch.set(participanteRef, participante);
+        }
+      }
 
-        const participantes = participantesSnapshot.docs.map(
-          (participante) => ({
-            id: participante.id,
-            ...participante.data(),
-          }),
-        );
+      await batch.commit();
+      return capacitacionRef.id;
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      throw error;
+    }
+  }
 
-        return {
-          id: docSnapshot.id,
-          ...docSnapshot.data(),
-          participantes,
-        };
-      }),
-    );
+  async function getCapacitaciones(): Promise<Capacitacion[]> {
+    try {
+      const capacitacionesRef = collection(db, "capacitaciones");
+      const capacitacionesSnapshot = await getDocs(capacitacionesRef);
 
-    return capacitaciones as Capacitacion[];
+      const capacitaciones = await Promise.all(
+        capacitacionesSnapshot.docs.map(async (capacitacionSnapshot) => {
+          const formularioSnapshot = await getDoc(
+            capacitacionSnapshot.data().formulario,
+          );
+          const formularioData = formularioSnapshot.data() as Formulario;
+          const nombreFormulario = formularioData.nombre;
+
+          const participantesRef = collection(
+            capacitacionSnapshot.ref,
+            "participantes",
+          );
+          const participantesSnapshot = await getDocs(participantesRef);
+
+          const participantes = participantesSnapshot.docs.map(
+            (participante) => ({
+              id: participante.id,
+              ...participante.data(),
+            }),
+          );
+
+          return {
+            id: capacitacionSnapshot.id,
+            ...capacitacionSnapshot.data(),
+            nombreFormulario,
+            participantes,
+          };
+        }),
+      );
+
+      return capacitaciones as Capacitacion[];
+    } catch (error) {
+      console.error("Error getting documents: ", error);
+      throw error;
+    }
   }
 
   async function deleteCapacitacion(capacitacionId: string) {
-    const capacitacionRef = doc(db, "capacitaciones", capacitacionId);
-    const participantesRef = collection(capacitacionRef, "participantes");
-    const participantesSnapshot = await getDocs(participantesRef);
-    const batch = writeBatch(db);
+    try {
+      const capacitacionRef = doc(db, "capacitaciones", capacitacionId);
+      const participantesRef = collection(capacitacionRef, "participantes");
+      const participantesSnapshot = await getDocs(participantesRef);
+      const batch = writeBatch(db);
 
-    // Eliminar participantes
-    participantesSnapshot.docs.forEach((participante) => {
-      batch.delete(participante.ref);
-    });
+      // Eliminar participantes
+      participantesSnapshot.docs.forEach((participante) => {
+        batch.delete(participante.ref);
+      });
 
-    // Eliminar capacitación
-    batch.delete(capacitacionRef);
+      // Eliminar capacitación
+      batch.delete(capacitacionRef);
 
-    await batch.commit();
+      await batch.commit();
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      throw error;
+    }
   }
 
   return {

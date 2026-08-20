@@ -16,7 +16,7 @@ export const formularioJsonSchema = z.object({
   ),
 });
 
-export const formularioCreateSchema = formularioJsonSchema.extend({
+export const formularioRawSchema = formularioJsonSchema.extend({
   nombre: z.string(),
   fechaCreacion: z.date(),
 });
@@ -28,5 +28,5 @@ export const formularioSchema = formularioJsonSchema.extend({
 });
 
 export type FormularioJson = z.infer<typeof formularioJsonSchema>;
-export type FormularioCreate = z.infer<typeof formularioCreateSchema>;
+export type FormularioRaw = z.infer<typeof formularioRawSchema>;
 export type Formulario = z.infer<typeof formularioSchema>;

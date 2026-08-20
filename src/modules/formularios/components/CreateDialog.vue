@@ -47,18 +47,12 @@ const submit = handleSubmit(async (values) => {
 });
 
 function useDefineForm() {
-  type FormValues = {
-    nombreFormulario: string;
-    selectedFile: File | null;
-  };
   const schema = z.object({
     nombreFormulario: z
       .string()
       .nonempty("El nombre del formulario es obligatorio"),
     selectedFile: z
-      .instanceof(File, {
-        message: "Debes seleccionar un archivo",
-      })
+      .instanceof(File, { message: "Debes seleccionar un archivo" })
       .refine((file) => file.name.endsWith(".json"), {
         message: "El archivo debe ser un JSON",
       })
@@ -78,7 +72,7 @@ function useDefineForm() {
   const validateOnModelUpdate = (state: any) => ({
     validateOnModelUpdate: state.errors.length > 0,
   });
-  const { errors, defineField, handleSubmit, resetForm } = useForm<FormValues>({
+  const { errors, defineField, handleSubmit, resetForm } = useForm({
     validationSchema: toTypedSchema(schema),
   });
   const [nombreFormulario, nombreFormularioAttrs] = defineField(
@@ -130,7 +124,7 @@ function useDefineForm() {
           />
 
           <v-file-input
-            v-model="selectedFile"
+            v-model="selectedFile as File | null"
             v-bind="selectedFileAttrs"
             :error-messages="errors.selectedFile"
             label="Archivo del formulario"

@@ -7,10 +7,10 @@ import {
 } from "firebase/firestore";
 import { db } from "@/plugins/firebase";
 
-import { type Formulario, type FormularioCreate } from "../schemas";
+import { type Formulario, type FormularioRaw } from "../schemas";
 
 export function useFormularios() {
-  async function addFormulario(formulario: FormularioCreate): Promise<string> {
+  async function addFormulario(formulario: FormularioRaw): Promise<string> {
     try {
       const formsRef = collection(db, "formularios");
       const docRef = await addDoc(formsRef, formulario);
