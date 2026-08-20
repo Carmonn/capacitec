@@ -4,6 +4,8 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "@/plugins/firebase";
 
@@ -23,12 +25,23 @@ export function useFormularios() {
 
   async function getFormularios(): Promise<Formulario[]> {
     try {
-      const formsRef = collection(db, "formularios");
-      const querySnapshot = await getDocs(formsRef);
-      const formularios = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const formulariosRef = collection(db, "formularios");
+
+      const formulariosQuery = query(
+        formulariosRef,
+        orderBy("fechaCreacion", "desc"),
+      );
+
+      const querySnapshot = await getDocs(formulariosQuery);
+      const formularios = querySnapshot.docs.map((doc) => {
+        const { fechaCreacion, ...formularioData } = doc.data();
+        return {
+          id: doc.id,
+          fechaCreacion: fechaCreacion.toDate(),
+          ...formularioData,
+        };
+      });
+
       return formularios as Formulario[];
     } catch (error) {
       console.error("Error getting documents: ", error);

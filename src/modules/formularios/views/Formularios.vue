@@ -97,7 +97,7 @@ const formularioDialogComponent = computed(() => {
         <v-btn color="success" @click="setCreateDialog()"> Agregar </v-btn>
         <DataTable :items="items" :headers="headers" :loading="isLoading">
           <template #[`item.hFechaCreacion`]="{ item }">
-            {{ item.fechaCreacion.toDate().toLocaleDateString("es-MX") }}
+            {{ item.fechaCreacion.toLocaleDateString("es-MX") }}
           </template>
 
           <template #[`item.hNombre`]="{ item }">

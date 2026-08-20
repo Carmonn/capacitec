@@ -43,7 +43,6 @@ async function handleGetCapacitaciones() {
     const capacitaciones = await getCapacitaciones();
     if (!capacitaciones) items.value = [];
     else items.value = capacitaciones;
-    console.log("Capacitaciones obtenidas:", capacitaciones);
   } catch (error) {
     console.error("Error al obtener las capacitaciones:", error);
   } finally {
@@ -97,7 +96,7 @@ const capacitacionDialogComponent = computed(() => {
         <v-btn color="success" @click="setCreateDialog()"> Agregar </v-btn>
         <DataTable :items="items" :headers="headers">
           <template #[`item.hFecha`]="{ item }">
-            {{ item.fechaCapacitacion.toDate().toLocaleDateString("es-MX") }}
+            {{ item.fechaCapacitacion.toLocaleDateString("es-MX") }}
           </template>
 
           <template #[`item.hCliente`]="{ item }">
@@ -105,7 +104,7 @@ const capacitacionDialogComponent = computed(() => {
           </template>
 
           <template #[`item.hFormulario`]="{ item }">
-            {{ item.formularioNombre }}
+            {{ item.nombreFormulario }}
           </template>
 
           <template #[`item.hParticipantes`]="{ item }">

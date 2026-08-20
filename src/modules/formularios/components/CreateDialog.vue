@@ -8,7 +8,7 @@ import { useFormularios } from "../composables/useFormularios";
 import { formularioJsonSchema } from "../schemas";
 
 const { addFormulario } = useFormularios();
-const { isLoading, status, resetStatus } = useStatus();
+const { isLoading, isSuccess, status, resetStatus } = useStatus();
 const {
   errors,
   handleSubmit,
@@ -24,6 +24,9 @@ const emit = defineEmits<{
 }>();
 
 const showDialogCreate = defineModel<boolean>();
+const closeDialog = () => {
+  showDialogCreate.value = false;
+};
 const submit = handleSubmit(async (values) => {
   try {
     status.value = "loading";
@@ -103,11 +106,7 @@ function useDefineForm() {
         <v-icon class="mr-3"> mdi-file-document-plus-outline </v-icon>
         <span>Agregar formulario</span>
         <v-spacer />
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          @click="showDialogCreate = false"
-        />
+        <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
       </v-card-title>
 
       <v-card-text>
@@ -144,15 +143,11 @@ function useDefineForm() {
 
       <v-card-actions class="pa-4">
         <v-spacer />
-
-        <v-btn variant="text" @click="showDialogCreate = false">
-          Cancelar
-        </v-btn>
-
+        <v-btn variant="text" @click="closeDialog"> Cancelar </v-btn>
         <v-btn
           color="primary"
           variant="flat"
-          :disabled="isLoading || status === 'success'"
+          :disabled="isLoading || isSuccess"
           :loading="isLoading"
           @click="submit"
         >

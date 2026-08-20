@@ -4,6 +4,8 @@ import {
   getDoc,
   writeBatch,
   doc,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "@/plugins/firebase";
 
@@ -16,9 +18,14 @@ export function useCapacitaciones() {
       const batch = writeBatch(db);
       const capacitacionRef = doc(collection(db, "capacitaciones"));
 
-      const { participantes, ...capacitacionData } = capacitacion;
+      const { participantes, formularioRef, ...capacitacionData } =
+        capacitacion;
 
-      batch.set(capacitacionRef, capacitacionData);
+      const formularioDocRef = doc(db, "formularios", formularioRef);
+      batch.set(capacitacionRef, {
+        ...capacitacionData,
+        formularioRef: formularioDocRef,
+      });
 
       if (participantes && participantes.length > 0) {
         const participantesRef = collection(
@@ -45,12 +52,18 @@ export function useCapacitaciones() {
   async function getCapacitaciones(): Promise<Capacitacion[]> {
     try {
       const capacitacionesRef = collection(db, "capacitaciones");
-      const capacitacionesSnapshot = await getDocs(capacitacionesRef);
+
+      const capacitacionesQuery = query(
+        capacitacionesRef,
+        orderBy("fechaCapacitacion", "desc"),
+      );
+
+      const capacitacionesSnapshot = await getDocs(capacitacionesQuery);
 
       const capacitaciones = await Promise.all(
         capacitacionesSnapshot.docs.map(async (capacitacionSnapshot) => {
           const formularioSnapshot = await getDoc(
-            capacitacionSnapshot.data().formulario,
+            capacitacionSnapshot.data().formularioRef,
           );
           const formularioData = formularioSnapshot.data() as Formulario;
           const nombreFormulario = formularioData.nombre;
@@ -68,16 +81,20 @@ export function useCapacitaciones() {
             }),
           );
 
+          const { fechaCapacitacion, ...capacitacionData } =
+            capacitacionSnapshot.data();
+
           return {
             id: capacitacionSnapshot.id,
-            ...capacitacionSnapshot.data(),
+            fechaCapacitacion: fechaCapacitacion.toDate(),
+            ...capacitacionData,
             nombreFormulario,
             participantes,
           };
         }),
       );
 
-      return capacitaciones as Capacitacion[];
+      return capacitaciones as unknown as Capacitacion[];
     } catch (error) {
       console.error("Error getting documents: ", error);
       throw error;

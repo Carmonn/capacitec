@@ -21,7 +21,7 @@ export const participanteSchema = z.object({
 export type Participante = z.infer<typeof participanteSchema>;
 
 export const capacitacionRawSchema = z.object({
-  fechaCapacitacion: z.string(),
+  fechaCapacitacion: z.date(),
   cliente: z.string(),
   formularioRef: z.string(),
   participantes: z.array(participanteSchema).optional(),
